@@ -29,6 +29,7 @@ td.w{background:var(--win);font-weight:700}
 <header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 3 דגמים</p></header>
 <main>
 <h2>1. מה התקציב?</h2><div class="chips" id="ranges"></div>
+<h2>סוג יבוא</h2><div class="chips" id="imp"></div><div class="sum" id="impn"></div>
 <h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
 <div id="tip"></div>
 <h2>3. בחרו עד 3 טלפונים להשוואה</h2><div class="grid" id="list"></div>
@@ -61,20 +62,23 @@ const P=[
 ["OnePlus 13",3300,"6.82\"",50,6000,"Snapdragon 8 Elite",256,213,"IP69",6,9,10,10,10,"מהיר מאוד עם סוללה עצומה"],
 ["Nothing Phone (3a)",1350,"6.77\"",50,5000,"Snapdragon 7s Gen 3",256,201,"IP64",6,7,9,7,8,"עיצוב ייחודי, מחיר הוגן"],
 ["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
-].map(r=>({n:r[0],p:r[1],scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
+].map(r=>({n:r[0],po:/Pixel|OnePlus|Nothing/.test(r[0])?null:r[1],pp:Math.round(r[1]*.87/10)*10,scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
+let imp="off";const pr=x=>imp=="off"?x.po:x.pp;P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x)}));
 const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
 const PR={all:"מאוזן",cam:"📷 צילום",batS:"🔋 סוללה",perf:"🎮 ביצועים/משחקים",disp:"🖥️ מסך"};
 let selR=new Set([2,3]),prio="all",sel=[];
 const f=n=>n.toLocaleString("he-IL")+" ₪";
 const rl=([a,b])=>a==0?"עד 500 ₪":b>1e8?"מעל 5,000 ₪":f(a)+" – "+f(b);
 const score=x=>prio=="all"?x.cam+x.batS+x.perf+x.disp+x.yrs/2:x[prio]*3+(x.cam+x.batS+x.perf+x.disp)/2;
-function inR(p){return [...selR].some(i=>p.p>=R[i][0]&&p.p<R[i][1])}
+function inR(p){if(p.p==null)return false;return [...selR].some(i=>p.p>=R[i][0]&&p.p<R[i][1])}
 function draw(){
  ranges.innerHTML=R.map((r,i)=>`<button class="chip ${selR.has(i)?"on":""}" onclick="tg(${i})">${rl(r)}</button>`).join("");
  document.getElementById("prio").innerHTML=Object.entries(PR).map(([k,v])=>`<button class="chip ${prio==k?"on":""}" onclick="prio='${k}';draw()">${v}</button>`).join("");
+ document.getElementById("imp").innerHTML=[["off","✅ יבואן רשמי"],["par","🔄 יבוא מקביל"]].map(([k,v])=>`<button class="chip ${imp==k?"on":""}" onclick="imp='${k}';sel=sel.filter(n=>P.find(x=>x.n==n).p!=null);draw()">${v}</button>`).join("");
+ impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
  const L=P.filter(inR).sort((a,b)=>score(b)-score(a));
  const best=L[0];
- list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<b>${x.n}</b><span class="price">${f(x.p)}</span><div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
+ list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<b>${x.n}</b><span class="price">${f(x.p)}</span>${imp=="off"?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
  // "שווה עוד קצת"
  let t="";if(best){const max=Math.max(...L.map(x=>x.p));const up=P.filter(x=>x.p>max&&x.p<=max+500&&score(x)>score(best)+2).sort((a,b)=>score(b)-score(a))[0];
  if(up)t=`<div class="tip">💡 <b>שווה עוד קצת?</b> בתוספת של כ-${f(up.p-best.p)} תקבלו את <b>${up.n}</b> (${f(up.p)}): ${up.sum}.</div>`}
@@ -84,7 +88,7 @@ function draw(){
 function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
 function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
 go.onclick=()=>{const S=sel.map(n=>P.find(x=>x.n==n));
- const rows=[["מחיר משוער","p",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
+ const rows=[["מחיר משוער","p",-1,f],["יבואן רשמי","po",-1,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
  cmp.innerHTML=`<h2>ההשוואה</h2><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
  return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table><p class="note">ירוק = המנצח בשורה</p>`;
  cmp.scrollIntoView({behavior:"smooth"})};
