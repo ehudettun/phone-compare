@@ -23,6 +23,9 @@ h2{font-size:19px;margin:22px 0 10px}
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;font-size:15px}
 th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center}th:first-child,td:first-child{text-align:right;font-weight:700;background:#f8fafc}
 td.w{background:var(--win);font-weight:700}
+.fav{position:absolute;top:6px;left:8px;background:none;border:0;font-size:22px;cursor:pointer;padding:2px}
+.tw{overflow-x:auto}
+.btn2{background:#fff;color:var(--acc);border:2px solid var(--acc)}
 .note{font-size:13px;color:#667;margin-top:16px;text-align:center}
 .empty{color:#667;padding:20px;text-align:center}
 </style></head><body>
@@ -37,7 +40,7 @@ td.w{background:var(--win);font-weight:700}
 <div id="cmp"></div>
 <p class="note">המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
 </main>
-<div class="bar"><button class="btn" id="go" disabled>השוו (0)</button></div>
+<div class="bar"><button class="btn" id="go" disabled>השוו (0)</button> <button class="btn btn2" id="gofav" disabled>❤️ השוו מועדפים (0)</button></div>
 <script>
 // cam/bat/perf/disp: ציון 1-10
 const P=[
@@ -81,19 +84,23 @@ function draw(){
  impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
  const L=P.filter(inR).sort((a,b)=>score(b)-score(a));
  cnt.textContent=`(${L.length} דגמים)`;const best=L[0];
- list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<b>${x.n}</b><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
+ list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.n}</b><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
  // "שווה עוד קצת"
  let t="";if(best){const max=Math.max(...L.map(x=>x.p));const up=P.filter(x=>x.p>max&&x.p<=max+500&&score(x)>score(best)+2).sort((a,b)=>score(b)-score(a))[0];
  if(up)t=`<div class="tip">💡 <b>שווה עוד קצת?</b> בתוספת של כ-${f(up.p-best.p)} תקבלו את <b>${up.n}</b> (${f(up.p)}): ${up.sum}.</div>`}
  tip.innerHTML=t;
+ gofav.disabled=fav.length<2;gofav.textContent=`❤️ השוו מועדפים (${fav.length})`;
  go.disabled=sel.length<2;go.textContent=`השוו (${sel.length})`;
 }
 function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
+let fav=JSON.parse(localStorage.getItem("fav")||"[]");
+function tf(n){fav=fav.includes(n)?fav.filter(x=>x!=n):[...fav,n];localStorage.setItem("fav",JSON.stringify(fav));draw()}
 function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
-go.onclick=()=>{const S=sel.map(n=>P.find(x=>x.n==n));
+gofav.onclick=()=>cmpS(fav);go.onclick=()=>cmpS(sel);
+function cmpS(names){const S=names.map(n=>P.find(x=>x.n==n));
  const rows=[["מחיר משוער","p",-1,f],["יבואן רשמי","po",0,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
- cmp.innerHTML=`<h2>ההשוואה</h2><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
- return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table><p class="note">ירוק = המנצח בשורה</p>`;
- cmp.scrollIntoView({behavior:"smooth"})};
+ cmp.innerHTML=`<h2>ההשוואה</h2><div class="tw"><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
+ return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table></div><p class="note">ירוק = המנצח בשורה</p>`;
+ cmp.scrollIntoView({behavior:"smooth"})}
 draw();
 </script></body></html>
