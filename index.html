@@ -26,19 +26,23 @@ td.w{background:var(--win);font-weight:700}
 .fav{position:absolute;top:6px;left:8px;background:none;border:0;font-size:22px;cursor:pointer;padding:2px}
 .tw{overflow-x:auto}
 .btn2{background:#fff;color:var(--acc);border:2px solid var(--acc)}
+.t1{border-color:#2563eb!important;color:#1d4ed8}.t2{border-color:#16a34a!important;color:#15803d}.t3{border-color:#dc2626!important;color:#b91c1c}
+.chip.on.t1{background:#2563eb;color:#fff}.chip.on.t2{background:#16a34a;color:#fff}.chip.on.t3{background:#dc2626;color:#fff}
+.card.t1{border-right:6px solid #2563eb}.card.t2{border-right:6px solid #16a34a}.card.t3{border-right:6px solid #dc2626}
+.rel{font-size:13px;font-weight:700}
 .note{font-size:13px;color:#667;margin-top:16px;text-align:center}
 .empty{color:#667;padding:20px;text-align:center}
 </style></head><body>
 <header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 3 דגמים</p></header>
 <main>
 <h2>1. מה התקציב?</h2><div class="chips" id="ranges"></div>
-<h2>חברות</h2><div class="chips" id="brands"></div><div class="sum">אפשר לבחור כמה חברות ביחד. בלי בחירה מוצגות כולן.</div>
+<h2>חברות</h2><div class="chips" id="brands"></div><div class="sum"><span class="rel t1">🔵 הכי אמינה</span> · <span class="rel t2">🟢 אמינות בינונית</span> · <span class="rel t3">🔴 פחות מומלצת באמינות</span><br>אפשר לבחור כמה חברות ביחד. בלי בחירה מוצגות כולן.</div>
 <h2>סוג יבוא</h2><div class="chips" id="imp"></div><div class="sum" id="impn"></div>
 <h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
 <div id="tip"></div>
 <h2>3. בחרו עד 3 טלפונים להשוואה <span id="cnt" class="sum"></span></h2><div class="grid" id="list"></div>
 <div id="cmp"></div>
-<p class="note">המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
+<p class="note">דירוג האמינות הוא הערכה כללית לפי עדכוני תוכנה, שירות ותיקונים בישראל ואיכות הבנייה. המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
 </main>
 <div class="bar"><button class="btn" id="go" disabled>השוו (0)</button> <button class="btn btn2" id="gofav" disabled>❤️ השוו מועדפים (0)</button></div>
 <script>
@@ -95,6 +99,7 @@ const P=[
 ["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
 ].map(r=>({n:r[0],po:/Pixel|OnePlus|Nothing|Huawei|Sony|Asus|Vivo|Blackview|CAT|POCO/.test(r[0])?null:r[1],pp:Math.round(r[1]*.87/10)*10,scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
 const BR=x=>/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();
+const T1=["Apple","Samsung","Google"],T3=["Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];const TR=b=>T1.includes(b)?"t1":T3.includes(b)?"t3":"t2";const TL={t1:"🔵 הכי אמינה",t2:"🟢 אמינות בינונית",t3:"🔴 פחות מומלצת באמינות"};
 let imp="off";const pr=x=>imp=="off"?(x.po??x.pp):x.pp;P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x)}));
 const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
 const PR={all:"מאוזן",cam:"📷 צילום",batS:"🔋 סוללה",perf:"🎮 ביצועים/משחקים",disp:"🖥️ מסך"};
@@ -106,12 +111,12 @@ function inR(p){if(p.p==null)return false;if(selB.size&&!selB.has(BR(p)))return 
 function draw(){
  ranges.innerHTML=`<button class="chip ${selR.size?"":"on"}" onclick="selR.clear();draw()">כל המחירים</button>`+R.map((r,i)=>`<button class="chip ${selR.has(i)?"on":""}" onclick="tg(${i})">${rl(r)}</button>`).join("");
  document.getElementById("prio").innerHTML=Object.entries(PR).map(([k,v])=>`<button class="chip ${prio==k?"on":""}" onclick="prio='${k}';draw()">${v}</button>`).join("");
- brands.innerHTML=`<button class="chip ${selB.size?"":"on"}" onclick="selB.clear();draw()">הכול</button>`+[...new Set(P.map(BR))].map(b=>`<button class="chip ${selB.has(b)?"on":""}" onclick="selB.has('${b}')?selB.delete('${b}'):selB.add('${b}');draw()">${b}</button>`).join("");
+ brands.innerHTML=`<button class="chip ${selB.size?"":"on"}" onclick="selB.clear();draw()">הכול</button>`+[...new Set(P.map(BR))].map(b=>`<button class="chip ${TR(b)} ${selB.has(b)?"on":""}" onclick="selB.has('${b}')?selB.delete('${b}'):selB.add('${b}');draw()">${b}</button>`).join("");
  document.getElementById("imp").innerHTML=[["off","✅ יבואן רשמי"],["par","🔄 יבוא מקביל"]].map(([k,v])=>`<button class="chip ${imp==k?"on":""}" onclick="imp='${k}';sel=sel.filter(n=>P.find(x=>x.n==n).p!=null);draw()">${v}</button>`).join("");
  impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
  const L=P.filter(inR).sort((a,b)=>score(b)-score(a));
  cnt.textContent=`(${L.length} דגמים)`;const best=L[0];
- list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.n}</b><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
+ list.innerHTML=L.length?L.map(x=>`<div class="card ${TR(BR(x))} ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.n}</b><span class="rel ${TR(BR(x))}">${TL[TR(BR(x))]}</span><br><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
  // "שווה עוד קצת"
  let t="";if(best){const max=Math.max(...L.map(x=>x.p));const up=P.filter(x=>x.p>max&&x.p<=max+500&&score(x)>score(best)+2).sort((a,b)=>score(b)-score(a))[0];
  if(up)t=`<div class="tip">💡 <b>שווה עוד קצת?</b> בתוספת של כ-${f(up.p-best.p)} תקבלו את <b>${up.n}</b> (${f(up.p)}): ${up.sum}.</div>`}
@@ -125,7 +130,7 @@ function tf(n){fav=fav.includes(n)?fav.filter(x=>x!=n):[...fav,n];localStorage.s
 function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
 gofav.onclick=()=>cmpS(fav);go.onclick=()=>cmpS(sel);
 function cmpS(names){const S=names.map(n=>P.find(x=>x.n==n));
- const rows=[["מחיר משוער","p",-1,f],["יבואן רשמי","po",0,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
+ const rows=[["אמינות החברה","n",0,n=>TL[TR(BR(P.find(x=>x.n==n)))]],["מחיר משוער","p",-1,f],["יבואן רשמי","po",0,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
  cmp.innerHTML=`<h2>ההשוואה</h2><div class="tw"><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
  return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table></div><p class="note">ירוק = המנצח בשורה</p>`;
  cmp.scrollIntoView({behavior:"smooth"})}
