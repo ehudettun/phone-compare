@@ -41,6 +41,17 @@ td.w{background:var(--win);font-weight:700}
 <h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
 <div id="tip"></div>
 <h2>3. בחרו עד 50 טלפונים להשוואה <span id="cnt" class="sum"></span></h2><div class="grid" id="list"></div>
+<details id="addf" style="background:#fff;border:1px dashed var(--acc);border-radius:12px;padding:12px;margin-top:20px"><summary style="cursor:pointer;font-weight:700;color:var(--acc)">➕ הוסף דגם משלך</summary>
+<p class="sum">רשום דגם שמעניין אותך והוא יופיע ברשימה ובהשוואות. הוא נשמר רק בטלפון שלך. חובה רק שם ומחיר, השאר לא חובה.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+<input type="text" id="c_n" placeholder="שם הדגם *"><input type="text" id="c_b" placeholder="חברה (למשל Samsung)"><input type="number" id="c_p" placeholder="מחיר ב-₪ *">
+<input type="text" id="c_scr" placeholder='מסך (אינץ׳)'><input type="number" id="c_mp" placeholder="מצלמה (MP)"><input type="number" id="c_bat" placeholder="סוללה (mAh)">
+<input type="text" id="c_chip" placeholder="מעבד"><input type="number" id="c_st" placeholder="אחסון (GB)"><input type="number" id="c_g" placeholder="משקל (גרם)">
+<input type="text" id="c_ip" placeholder="עמידות (למשל IP68)"><input type="number" id="c_ly" placeholder="שנת השקה"><input type="number" id="c_y" placeholder="שנות עדכונים מההשקה">
+<input type="text" id="c_sum" placeholder="הערה קצרה"></div>
+<label style="display:block;margin:8px 0"><input type="checkbox" id="c_off" checked> המחיר הוא של יבואן רשמי</label>
+<button class="btn" onclick="addCustom()">הוסף לרשימה</button></details>
+<style>#addf input[type=text],#addf input[type=number]{padding:9px;border:1px solid var(--line);border-radius:8px;font-size:15px;width:100%}</style>
 <div id="cmp"></div>
 <p class="note">דירוג האמינות הוא הערכה כללית לפי עדכוני תוכנה, שירות ותיקונים בישראל ואיכות הבנייה. המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
 </main>
@@ -144,10 +155,12 @@ const P=[
 ["CAT S75",2000,"6.6\"",50,5000,"Dimensity 930",128,268,"IP69",3,6,8,5,7,"קשוח לעבודה, מחובר ללוויין"],
 ["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
 ].map(r=>({n:r[0],po:/Pixel|OnePlus|Nothing|Huawei|Sony|Asus|Vivo|Blackview|CAT|POCO/.test(r[0])?null:r[1],pp:Math.round(r[1]*.87/10)*10,scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
-const BR=x=>/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();const BO=["Apple","Samsung","Google","Xiaomi","POCO","OnePlus","Motorola","Sony","Honor","Oppo","Realme","Vivo","Asus","Nothing","Nokia","HMD","CAT","Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];
+const BR=x=>x.b?x.b:/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();const BO=["Apple","Samsung","Google","Xiaomi","POCO","OnePlus","Motorola","Sony","Honor","Oppo","Realme","Vivo","Asus","Nothing","Nokia","HMD","CAT","Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];
 const T1=["Apple","Samsung","Google"],T3=["Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];const TR=b=>T1.includes(b)?"t1":T3.includes(b)?"t3":"t2";const TL={t1:"🔵 הכי אמינה",t2:"🟢 אמינות בינונית",t3:"🔴 פחות מומלצת באמינות"};
-const LY={"iPhone 17": 2025.7, "iPhone Air": 2025.7, "iPhone 16e": 2025.1, "iPhone 16": 2024.7, "iPhone 15": 2023.7, "Galaxy S25 Edge": 2025.4, "Galaxy S25 FE": 2025.7, "Galaxy S25": 2025.1, "Galaxy S24 FE": 2024.8, "Galaxy Z": 2025.5, "Galaxy A56": 2025.2, "Galaxy A36": 2025.2, "Galaxy A26": 2025.2, "Galaxy A17": 2025.7, "Galaxy A16": 2024.8, "Galaxy A06": 2024.6, "Galaxy A55": 2024.2, "Galaxy A35": 2024.2, "Galaxy A25": 2023.95, "Galaxy A15": 2023.95, "Galaxy A05s": 2023.8, "Pixel 10 Pro Fold": 2025.8, "Pixel 10": 2025.6, "Pixel 9a": 2025.3, "Pixel 9": 2024.6, "Pixel 8a": 2024.4, "Pixel 7a": 2023.4, "Redmi Note 14": 2025.0, "Redmi 14C": 2024.7, "Motorola Moto G85": 2024.5, "Motorola Moto G55": 2024.6, "Nokia": 2023.5, "HMD": 2024.5, "TCL 50": 2024.3, "Blackview": 2023.5, "CAT": 2023.2, "OnePlus 13": 2025.0, "Huawei nova": 2024.8, "Realme C75": 2024.9, "POCO X7": 2025.0, "Honor X8c": 2025.2, "Sony Xperia 10": 2025.4};const launch=x=>{let k=Object.keys(LY).filter(k=>x.n.startsWith(k)).sort((a,b)=>b.length-a.length)[0];return k?LY[k]:2025.4};const NOW=new Date().getFullYear()+new Date().getMonth()/12;const left=x=>Math.max(0,Math.round((launch(x)+x.yrs-NOW)*2)/2);
-let imp="off";const pr=x=>imp=="off"?(x.po??x.pp):x.pp;P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x)}));
+const LY={"iPhone 17": 2025.7, "iPhone Air": 2025.7, "iPhone 16e": 2025.1, "iPhone 16": 2024.7, "iPhone 15": 2023.7, "Galaxy S25 Edge": 2025.4, "Galaxy S25 FE": 2025.7, "Galaxy S25": 2025.1, "Galaxy S24 FE": 2024.8, "Galaxy Z": 2025.5, "Galaxy A56": 2025.2, "Galaxy A36": 2025.2, "Galaxy A26": 2025.2, "Galaxy A17": 2025.7, "Galaxy A16": 2024.8, "Galaxy A06": 2024.6, "Galaxy A55": 2024.2, "Galaxy A35": 2024.2, "Galaxy A25": 2023.95, "Galaxy A15": 2023.95, "Galaxy A05s": 2023.8, "Pixel 10 Pro Fold": 2025.8, "Pixel 10": 2025.6, "Pixel 9a": 2025.3, "Pixel 9": 2024.6, "Pixel 8a": 2024.4, "Pixel 7a": 2023.4, "Redmi Note 14": 2025.0, "Redmi 14C": 2024.7, "Motorola Moto G85": 2024.5, "Motorola Moto G55": 2024.6, "Nokia": 2023.5, "HMD": 2024.5, "TCL 50": 2024.3, "Blackview": 2023.5, "CAT": 2023.2, "OnePlus 13": 2025.0, "Huawei nova": 2024.8, "Realme C75": 2024.9, "POCO X7": 2025.0, "Honor X8c": 2025.2, "Sony Xperia 10": 2025.4};const launch=x=>{if(x.ly)return x.ly;let k=Object.keys(LY).filter(k=>x.n.startsWith(k)).sort((a,b)=>b.length-a.length)[0];return k?LY[k]:2025.4};const NOW=new Date().getFullYear()+new Date().getMonth()/12;const left=x=>Math.max(0,Math.round((launch(x)+x.yrs-NOW)*2)/2);
+let imp="off";const pr=x=>imp=="off"?(x.po??x.pp):x.pp;
+let CU=JSON.parse(localStorage.getItem("custom")||"[]");CU.forEach(c=>P.push(c));
+P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x),configurable:true}));
 const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
 const PR={all:"מאוזן",cam:"📷 צילום",batS:"🔋 סוללה",perf:"🎮 ביצועים/משחקים",disp:"🖥️ מסך"};
 let selR=new Set(),prio="all",sel=[];
@@ -163,7 +176,7 @@ function draw(){
  impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
  const L=P.filter(inR).sort((a,b)=>TR(BR(a)).localeCompare(TR(BR(b)))||BO.indexOf(BR(a))-BO.indexOf(BR(b))||score(b)-score(a));
  cnt.textContent=`(${L.length} דגמים)`;const best=[...L].sort((a,b)=>score(b)-score(a))[0];
- list.innerHTML=L.length?L.map(x=>`<div class="card ${TR(BR(x))} ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.n}</b><span class="rel ${TR(BR(x))}">${TL[TR(BR(x))]}</span><br><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">🔄 עדכונים: ${left(x)?"עוד "+left(x)+" שנים":"⚠️ הסתיימו"}</div><div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
+ list.innerHTML=L.length?L.map(x=>`<div class="card ${TR(BR(x))} ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.mine?"✏️ ":""}${x.n}</b>${x.mine?`<button onclick="event.stopPropagation();delCustom('${x.n}')" style="float:left;border:0;background:none;color:#b91c1c;cursor:pointer">🗑️ מחק</button>`:""}<span class="rel ${TR(BR(x))}">${TL[TR(BR(x))]}</span><br><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">🔄 עדכונים: ${left(x)?"עוד "+left(x)+" שנים":"⚠️ הסתיימו"}</div><div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
  // "שווה עוד קצת"
  let t="";if(best){const max=Math.max(...L.map(x=>x.p));const up=P.filter(x=>x.p>max&&x.p<=max+500&&score(x)>score(best)+2).sort((a,b)=>score(b)-score(a))[0];
  if(up)t=`<div class="tip">💡 <b>שווה עוד קצת?</b> בתוספת של כ-${f(up.p-best.p)} תקבלו את <b>${up.n}</b> (${f(up.p)}): ${up.sum}.</div>`}
@@ -173,6 +186,15 @@ function draw(){
 }
 function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
 let fav=JSON.parse(localStorage.getItem("fav")||"[]");
+function addCustom(){const v=id=>document.getElementById(id).value.trim(),num=id=>+v(id)||0;
+ const n=v("c_n"),pp=num("c_p");if(!n||!pp)return alert("צריך לפחות שם דגם ומחיר");if(P.some(x=>x.n==n))return alert("דגם בשם הזה כבר קיים");
+ const b=v("c_b")||n.split(" ")[0],mp=num("c_mp")||50,bat=num("c_bat")||5000,cl=t=>Math.max(1,Math.min(10,Math.round(t)));
+ const c={n,b,pp,po:imp=="off"&&document.getElementById("c_off").checked?Math.round(pp*1.15/10)*10:null,scr:(v("c_scr")||"?")+'"',mp,bat,chip:v("c_chip")||"—",st:num("c_st")||128,g:num("c_g")||190,ip:v("c_ip")||"—",yrs:num("c_y")||3,ly:num("c_ly")||new Date().getFullYear(),
+  cam:cl(mp/25+3),batS:cl(bat/700),perf:cl(pp/600+3),disp:cl(pp/700+5),sum:v("c_sum")||"✏️ דגם שהוספתי",mine:1};
+ if(document.getElementById("c_off").checked){c.po=pp;c.pp=Math.round(pp*.87/10)*10}
+ CU.push(c);localStorage.setItem("custom",JSON.stringify(CU));Object.defineProperty(c,"p",{get:()=>pr(c),configurable:true});P.push(c);
+ document.querySelectorAll("#addf input[type=text],#addf input[type=number]").forEach(i=>i.value="");draw();alert("הדגם נוסף ✅")}
+function delCustom(n){if(!confirm("למחוק את "+n+"?"))return;CU=CU.filter(c=>c.n!=n);localStorage.setItem("custom",JSON.stringify(CU));const i=P.findIndex(x=>x.n==n);if(i>=0)P.splice(i,1);sel=sel.filter(x=>x!=n);fav=fav.filter(x=>x!=n);draw()}
 function tf(n){fav=fav.includes(n)?fav.filter(x=>x!=n):[...fav,n];localStorage.setItem("fav",JSON.stringify(fav));draw()}
 function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<50?sel.push(n):alert("אפשר להשוות עד 50 טלפונים");draw()}
 gofav.onclick=()=>cmpS(fav);go.onclick=()=>cmpS(sel);
