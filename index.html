@@ -88,7 +88,7 @@ function draw(){
 function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
 function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
 go.onclick=()=>{const S=sel.map(n=>P.find(x=>x.n==n));
- const rows=[["מחיר משוער","p",-1,f],["יבואן רשמי","po",-1,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
+ const rows=[["מחיר משוער","p",-1,f],["יבואן רשמי","po",0,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
  cmp.innerHTML=`<h2>ההשוואה</h2><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
  return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table><p class="note">ירוק = המנצח בשורה</p>`;
  cmp.scrollIntoView({behavior:"smooth"})};
