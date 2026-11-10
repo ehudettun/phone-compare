@@ -1,6 +1,6 @@
 <!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>משווה טלפונים | איזה נייד לקנות?</title>
-<meta name="description" content="השוואת טלפונים ניידים לפי טווח מחיר, מצלמה, סוללה ועוד. בחרו תקציב והשוו עד 3 דגמים.">
+<meta name="description" content="השוואת טלפונים ניידים לפי טווח מחיר, מצלמה, סוללה ועוד. בחרו תקציב והשוו עד 50 דגמים.">
 <style>
 :root{--ink:#1d2433;--acc:#2563eb;--bg:#f5f7fb;--line:#e2e7f0;--win:#dcfce7}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Arial,sans-serif}
@@ -33,14 +33,14 @@ td.w{background:var(--win);font-weight:700}
 .note{font-size:13px;color:#667;margin-top:16px;text-align:center}
 .empty{color:#667;padding:20px;text-align:center}
 </style></head><body>
-<header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 3 דגמים</p></header>
+<header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 50 דגמים</p></header>
 <main>
 <h2>1. מה התקציב?</h2><div class="chips" id="ranges"></div>
 <h2>חברות</h2><div class="chips" id="brands"></div><div class="sum"><span class="rel t1">🔵 הכי אמינה</span> · <span class="rel t2">🟢 אמינות בינונית</span> · <span class="rel t3">🔴 פחות מומלצת באמינות</span><br>אפשר לבחור כמה חברות ביחד. בלי בחירה מוצגות כולן.</div>
 <h2>סוג יבוא</h2><div class="chips" id="imp"></div><div class="sum" id="impn"></div>
 <h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
 <div id="tip"></div>
-<h2>3. בחרו עד 3 טלפונים להשוואה <span id="cnt" class="sum"></span></h2><div class="grid" id="list"></div>
+<h2>3. בחרו עד 50 טלפונים להשוואה <span id="cnt" class="sum"></span></h2><div class="grid" id="list"></div>
 <div id="cmp"></div>
 <p class="note">דירוג האמינות הוא הערכה כללית לפי עדכוני תוכנה, שירות ותיקונים בישראל ואיכות הבנייה. המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
 </main>
@@ -165,7 +165,7 @@ function draw(){
 function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
 let fav=JSON.parse(localStorage.getItem("fav")||"[]");
 function tf(n){fav=fav.includes(n)?fav.filter(x=>x!=n):[...fav,n];localStorage.setItem("fav",JSON.stringify(fav));draw()}
-function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
+function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<50?sel.push(n):alert("אפשר להשוות עד 50 טלפונים");draw()}
 gofav.onclick=()=>cmpS(fav);go.onclick=()=>cmpS(sel);
 function cmpS(names){const S=names.map(n=>P.find(x=>x.n==n));
  const rows=[["אמינות החברה","n",0,n=>TL[TR(BR(P.find(x=>x.n==n)))]],["מחיר משוער","p",-1,f],["יבואן רשמי","po",0,v=>v?f(v):"אין"],["יבוא מקביל","pp",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
