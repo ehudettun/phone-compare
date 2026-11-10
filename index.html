@@ -29,6 +29,7 @@ td.w{background:var(--win);font-weight:700}
 <header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 3 דגמים</p></header>
 <main>
 <h2>1. מה התקציב?</h2><div class="chips" id="ranges"></div>
+<h2>חברות</h2><div class="chips" id="brands"></div><div class="sum">אפשר לבחור כמה חברות ביחד. בלי בחירה מוצגות כולן.</div>
 <h2>סוג יבוא</h2><div class="chips" id="imp"></div><div class="sum" id="impn"></div>
 <h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
 <div id="tip"></div>
@@ -63,6 +64,7 @@ const P=[
 ["Nothing Phone (3a)",1350,"6.77\"",50,5000,"Snapdragon 7s Gen 3",256,201,"IP64",6,7,9,7,8,"עיצוב ייחודי, מחיר הוגן"],
 ["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
 ].map(r=>({n:r[0],po:/Pixel|OnePlus|Nothing/.test(r[0])?null:r[1],pp:Math.round(r[1]*.87/10)*10,scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
+const BR=x=>/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();
 let imp="off";const pr=x=>imp=="off"?x.po:x.pp;P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x)}));
 const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
 const PR={all:"מאוזן",cam:"📷 צילום",batS:"🔋 סוללה",perf:"🎮 ביצועים/משחקים",disp:"🖥️ מסך"};
@@ -70,10 +72,11 @@ let selR=new Set([2,3]),prio="all",sel=[];
 const f=n=>n.toLocaleString("he-IL")+" ₪";
 const rl=([a,b])=>a==0?"עד 500 ₪":b>1e8?"מעל 5,000 ₪":f(a)+" – "+f(b);
 const score=x=>prio=="all"?x.cam+x.batS+x.perf+x.disp+x.yrs/2:x[prio]*3+(x.cam+x.batS+x.perf+x.disp)/2;
-function inR(p){if(p.p==null)return false;return [...selR].some(i=>p.p>=R[i][0]&&p.p<R[i][1])}
+function inR(p){if(p.p==null)return false;if(selB.size&&!selB.has(BR(p)))return false;return [...selR].some(i=>p.p>=R[i][0]&&p.p<R[i][1])}
 function draw(){
  ranges.innerHTML=R.map((r,i)=>`<button class="chip ${selR.has(i)?"on":""}" onclick="tg(${i})">${rl(r)}</button>`).join("");
  document.getElementById("prio").innerHTML=Object.entries(PR).map(([k,v])=>`<button class="chip ${prio==k?"on":""}" onclick="prio='${k}';draw()">${v}</button>`).join("");
+ brands.innerHTML=`<button class="chip ${selB.size?"":"on"}" onclick="selB.clear();draw()">הכול</button>`+[...new Set(P.map(BR))].map(b=>`<button class="chip ${selB.has(b)?"on":""}" onclick="selB.has('${b}')?selB.delete('${b}'):selB.add('${b}');draw()">${b}</button>`).join("");
  document.getElementById("imp").innerHTML=[["off","✅ יבואן רשמי"],["par","🔄 יבוא מקביל"]].map(([k,v])=>`<button class="chip ${imp==k?"on":""}" onclick="imp='${k}';sel=sel.filter(n=>P.find(x=>x.n==n).p!=null);draw()">${v}</button>`).join("");
  impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
  const L=P.filter(inR).sort((a,b)=>score(b)-score(a));
