@@ -1,0 +1,92 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>משווה טלפונים | איזה נייד לקנות?</title>
+<meta name="description" content="השוואת טלפונים ניידים לפי טווח מחיר, מצלמה, סוללה ועוד. בחרו תקציב והשוו עד 3 דגמים.">
+<style>
+:root{--ink:#1d2433;--acc:#2563eb;--bg:#f5f7fb;--line:#e2e7f0;--win:#dcfce7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Arial,sans-serif}
+header{background:var(--ink);color:#fff;padding:22px 16px;text-align:center}h1{margin:0;font-size:26px}header p{margin:4px 0 0;opacity:.8}
+main{max-width:980px;margin:auto;padding:16px}
+h2{font-size:19px;margin:22px 0 10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{flex:none;border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;cursor:pointer;font-size:15px}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.prio{display:flex;flex-wrap:wrap;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;position:relative}
+.card.sel{border-color:var(--acc);box-shadow:0 0 0 3px #bfdbfe}
+.card b{display:block;font-size:17px}.price{color:var(--acc);font-weight:700;font-size:18px}
+.sum{font-size:14px;color:#556;margin-top:4px}
+.badge{position:absolute;top:-10px;left:10px;background:#f59e0b;color:#fff;font-size:12px;padding:2px 8px;border-radius:10px}
+.tip{background:#fff7e6;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:15px}
+.bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;text-align:center}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:12px 26px;font-size:17px;font-weight:700;cursor:pointer}.btn:disabled{opacity:.4}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;font-size:15px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:center}th:first-child,td:first-child{text-align:right;font-weight:700;background:#f8fafc}
+td.w{background:var(--win);font-weight:700}
+.note{font-size:13px;color:#667;margin-top:16px;text-align:center}
+.empty{color:#667;padding:20px;text-align:center}
+</style></head><body>
+<header><h1>📱 משווה טלפונים</h1><p>בחרו תקציב, מה חשוב לכם, והשוו עד 3 דגמים</p></header>
+<main>
+<h2>1. מה התקציב?</h2><div class="chips" id="ranges"></div>
+<h2>2. מה הכי חשוב לך?</h2><div class="prio" id="prio"></div>
+<div id="tip"></div>
+<h2>3. בחרו עד 3 טלפונים להשוואה</h2><div class="grid" id="list"></div>
+<div id="cmp"></div>
+<p class="note">המחירים משוערים ומבוססים על מחירי שוק בישראל. לפני קנייה כדאי לבדוק את המחיר העדכני בחנות.</p>
+</main>
+<div class="bar"><button class="btn" id="go" disabled>השוו (0)</button></div>
+<script>
+// cam/bat/perf/disp: ציון 1-10
+const P=[
+["iPhone 17 Pro Max",5900,"6.9\"",48,4685,"A19 Pro",256,231,"IP68",7,10,10,10,10,"המצלמה והסוללה הכי טובות של אפל"],
+["iPhone 17 Pro",5200,"6.3\"",48,3998,"A19 Pro",256,204,"IP68",7,10,8,10,10,"פרו בגודל נוח ליד"],
+["iPhone 17",3700,"6.3\"",48,3692,"A19",256,177,"IP68",7,9,8,9,9,"האייפון המשתלם של השנה"],
+["iPhone 16e",2600,"6.1\"",48,4005,"A18",128,167,"IP68",7,8,8,8,7,"אייפון חדש במחיר נמוך יחסית"],
+["Galaxy S25 Ultra",4900,"6.9\"",200,5000,"Snapdragon 8 Elite",256,218,"IP68",7,10,9,10,10,"עט S-Pen וזום חזק במיוחד"],
+["Galaxy S25",3000,"6.2\"",50,4000,"Snapdragon 8 Elite",128,162,"IP68",7,8,7,10,9,"קומפקטי וחזק"],
+["Galaxy S25 FE",2300,"6.7\"",50,4900,"Exynos 2400",128,190,"IP68",7,8,8,8,9,"רוב התכונות של S25 בפחות כסף"],
+["Galaxy A56",1600,"6.7\"",50,5000,"Exynos 1580",128,198,"IP67",6,7,9,7,8,"הביניים הכי מאוזן של סמסונג"],
+["Galaxy A36",1250,"6.7\"",50,5000,"Snapdragon 6 Gen 3",128,195,"IP67",6,6,9,6,8,"סוללה טובה ועדכונים ארוכים"],
+["Galaxy A16",700,"6.7\"",50,5000,"Exynos 1330",128,200,"IP54",6,5,8,4,6,"פשוט וזול, מתאים לשימוש בסיסי"],
+["Pixel 10 Pro",4300,"6.3\"",50,4870,"Tensor G5",128,207,"IP68",7,10,8,8,10,"הצילום הכי חכם, תוכנה נקייה"],
+["Pixel 10",3200,"6.3\"",48,4970,"Tensor G5",128,204,"IP68",7,9,8,8,9,"מצלמה מצוינת במחיר סביר"],
+["Pixel 9a",1900,"6.3\"",48,5100,"Tensor G4",128,186,"IP68",7,8,9,7,8,"מצלמה של פיקסל במחיר ביניים"],
+["Xiaomi 15T Pro",3100,"6.83\"",50,5500,"Dimensity 9400+",256,210,"IP68",6,9,10,9,9,"סוללה ענקית וטעינה מהירה מאוד"],
+["Xiaomi 15T",2200,"6.83\"",50,5500,"Dimensity 8400",256,194,"IP68",6,8,10,8,9,"הרבה טלפון בכל שקל"],
+["Redmi Note 14 Pro+",1500,"6.67\"",200,5110,"Snapdragon 7s Gen 3",256,205,"IP68",4,7,9,7,8,"מצלמת 200MP ועמידות טובה"],
+["Redmi Note 14 Pro",1150,"6.67\"",200,5110,"Dimensity 7300",256,190,"IP68",4,7,9,6,8,"מסך יפה וזיכרון גדול"],
+["Redmi Note 14",800,"6.67\"",108,5500,"Helio G99",128,190,"IP54",4,6,9,5,7,"הבחירה החכמה עד 1,000 ₪"],
+["Redmi 14C",450,"6.88\"",50,5160,"Helio G81",128,207,"—",2,4,8,3,6,"הכי זול, לשיחות ו-וואטסאפ"],
+["OnePlus 13",3300,"6.82\"",50,6000,"Snapdragon 8 Elite",256,213,"IP69",6,9,10,10,10,"מהיר מאוד עם סוללה עצומה"],
+["Nothing Phone (3a)",1350,"6.77\"",50,5000,"Snapdragon 7s Gen 3",256,201,"IP64",6,7,9,7,8,"עיצוב ייחודי, מחיר הוגן"],
+["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
+].map(r=>({n:r[0],p:r[1],scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
+const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
+const PR={all:"מאוזן",cam:"📷 צילום",batS:"🔋 סוללה",perf:"🎮 ביצועים/משחקים",disp:"🖥️ מסך"};
+let selR=new Set([2,3]),prio="all",sel=[];
+const f=n=>n.toLocaleString("he-IL")+" ₪";
+const rl=([a,b])=>a==0?"עד 500 ₪":b>1e8?"מעל 5,000 ₪":f(a)+" – "+f(b);
+const score=x=>prio=="all"?x.cam+x.batS+x.perf+x.disp+x.yrs/2:x[prio]*3+(x.cam+x.batS+x.perf+x.disp)/2;
+function inR(p){return [...selR].some(i=>p.p>=R[i][0]&&p.p<R[i][1])}
+function draw(){
+ ranges.innerHTML=R.map((r,i)=>`<button class="chip ${selR.has(i)?"on":""}" onclick="tg(${i})">${rl(r)}</button>`).join("");
+ document.getElementById("prio").innerHTML=Object.entries(PR).map(([k,v])=>`<button class="chip ${prio==k?"on":""}" onclick="prio='${k}';draw()">${v}</button>`).join("");
+ const L=P.filter(inR).sort((a,b)=>score(b)-score(a));
+ const best=L[0];
+ list.innerHTML=L.length?L.map(x=>`<div class="card ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<b>${x.n}</b><span class="price">${f(x.p)}</span><div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
+ // "שווה עוד קצת"
+ let t="";if(best){const max=Math.max(...L.map(x=>x.p));const up=P.filter(x=>x.p>max&&x.p<=max+500&&score(x)>score(best)+2).sort((a,b)=>score(b)-score(a))[0];
+ if(up)t=`<div class="tip">💡 <b>שווה עוד קצת?</b> בתוספת של כ-${f(up.p-best.p)} תקבלו את <b>${up.n}</b> (${f(up.p)}): ${up.sum}.</div>`}
+ tip.innerHTML=t;
+ go.disabled=sel.length<2;go.textContent=`השוו (${sel.length})`;
+}
+function tg(i){selR.has(i)?selR.delete(i):selR.add(i);draw()}
+function pick(n){sel.includes(n)?sel=sel.filter(x=>x!=n):sel.length<3?sel.push(n):alert("אפשר להשוות עד 3 טלפונים");draw()}
+go.onclick=()=>{const S=sel.map(n=>P.find(x=>x.n==n));
+ const rows=[["מחיר משוער","p",-1,f],["מסך","scr",0],["מצלמה ראשית","mp",1,v=>v+"MP"],["ציון צילום","cam",1,v=>v+"/10"],["סוללה","bat",1,v=>v+" mAh"],["ציון סוללה","batS",1,v=>v+"/10"],["מעבד","chip",0],["ציון ביצועים","perf",1,v=>v+"/10"],["ציון מסך","disp",1,v=>v+"/10"],["אחסון בסיס","st",1,v=>v+"GB"],["משקל","g",-1,v=>v+" גרם"],["עמידות במים","ip",0],["שנות עדכונים","yrs",1,v=>v+" שנים"]];
+ cmp.innerHTML=`<h2>ההשוואה</h2><table><tr><th></th>${S.map(x=>`<th>${x.n}</th>`).join("")}</tr>`+rows.map(([l,k,d,fm])=>{const vs=S.map(x=>x[k]);const b=d==1?Math.max(...vs):d==-1?Math.min(...vs):null;
+ return `<tr><td>${l}</td>${S.map(x=>`<td class="${b!==null&&x[k]==b&&vs.filter(v=>v==b).length<S.length?"w":""}">${fm?fm(x[k]):x[k]}</td>`).join("")}</tr>`}).join("")+`<tr><td>בשורה התחתונה</td>${S.map(x=>`<td>${x.sum}</td>`).join("")}</tr></table><p class="note">ירוק = המנצח בשורה</p>`;
+ cmp.scrollIntoView({behavior:"smooth"})};
+draw();
+</script></body></html>
