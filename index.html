@@ -98,7 +98,7 @@ const P=[
 ["CAT S75",2000,"6.6\"",50,5000,"Dimensity 930",128,268,"IP69",3,6,8,5,7,"קשוח לעבודה, מחובר ללוויין"],
 ["Motorola Moto G85",900,"6.67\"",50,5000,"Snapdragon 6s Gen 3",256,172,"IP52",3,6,8,5,8,"דק וקל, מסך מעוגל"]
 ].map(r=>({n:r[0],po:/Pixel|OnePlus|Nothing|Huawei|Sony|Asus|Vivo|Blackview|CAT|POCO/.test(r[0])?null:r[1],pp:Math.round(r[1]*.87/10)*10,scr:r[2],mp:r[3],bat:r[4],chip:r[5],st:r[6],g:r[7],ip:r[8],yrs:r[9],cam:r[10],batS:r[11],perf:r[12],disp:r[13],sum:r[14]}));
-const BR=x=>/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();
+const BR=x=>/iPhone/.test(x.n)?"Apple":/Galaxy/.test(x.n)?"Samsung":/Pixel/.test(x.n)?"Google":/Xiaomi|Redmi/.test(x.n)?"Xiaomi":x.n.split(" ")[0];let selB=new Set();const BO=["Apple","Samsung","Google","Xiaomi","POCO","OnePlus","Motorola","Sony","Honor","Oppo","Realme","Vivo","Asus","Nothing","Nokia","HMD","CAT","Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];
 const T1=["Apple","Samsung","Google"],T3=["Huawei","TCL","ZTE","Tecno","Infinix","Blackview"];const TR=b=>T1.includes(b)?"t1":T3.includes(b)?"t3":"t2";const TL={t1:"🔵 הכי אמינה",t2:"🟢 אמינות בינונית",t3:"🔴 פחות מומלצת באמינות"};
 let imp="off";const pr=x=>imp=="off"?(x.po??x.pp):x.pp;P.forEach(x=>Object.defineProperty(x,"p",{get:()=>pr(x)}));
 const R=[[0,500]];for(let a=500;a<5000;a+=500)R.push([a,a+500]);R.push([5000,1e9]);
@@ -111,10 +111,10 @@ function inR(p){if(p.p==null)return false;if(selB.size&&!selB.has(BR(p)))return 
 function draw(){
  ranges.innerHTML=`<button class="chip ${selR.size?"":"on"}" onclick="selR.clear();draw()">כל המחירים</button>`+R.map((r,i)=>`<button class="chip ${selR.has(i)?"on":""}" onclick="tg(${i})">${rl(r)}</button>`).join("");
  document.getElementById("prio").innerHTML=Object.entries(PR).map(([k,v])=>`<button class="chip ${prio==k?"on":""}" onclick="prio='${k}';draw()">${v}</button>`).join("");
- brands.innerHTML=`<button class="chip ${selB.size?"":"on"}" onclick="selB.clear();draw()">הכול</button>`+[...new Set(P.map(BR))].sort((a,b)=>TR(a).localeCompare(TR(b))).map(b=>`<button class="chip ${TR(b)} ${selB.has(b)?"on":""}" onclick="selB.has('${b}')?selB.delete('${b}'):selB.add('${b}');draw()">${b}</button>`).join("");
+ brands.innerHTML=`<button class="chip ${selB.size?"":"on"}" onclick="selB.clear();draw()">הכול</button>`+[...new Set(P.map(BR))].sort((a,b)=>BO.indexOf(a)-BO.indexOf(b)).map(b=>`<button class="chip ${TR(b)} ${selB.has(b)?"on":""}" onclick="selB.has('${b}')?selB.delete('${b}'):selB.add('${b}');draw()">${b}</button>`).join("");
  document.getElementById("imp").innerHTML=[["off","✅ יבואן רשמי"],["par","🔄 יבוא מקביל"]].map(([k,v])=>`<button class="chip ${imp==k?"on":""}" onclick="imp='${k}';sel=sel.filter(n=>P.find(x=>x.n==n).p!=null);draw()">${v}</button>`).join("");
  impn.textContent=imp=="off"?"אחריות מלאה של היבואן בישראל ומעבדה מורשית. בדרך כלל יקר יותר.":"זול יותר בכ-10–15%, אבל האחריות היא של החנות/היבואן המקביל ולא של היצרן. כדאי לוודא תמיכה בעברית ובתדרים בישראל.";
- const L=P.filter(inR).sort((a,b)=>TR(BR(a)).localeCompare(TR(BR(b)))||score(b)-score(a));
+ const L=P.filter(inR).sort((a,b)=>TR(BR(a)).localeCompare(TR(BR(b)))||BO.indexOf(BR(a))-BO.indexOf(BR(b))||score(b)-score(a));
  cnt.textContent=`(${L.length} דגמים)`;const best=[...L].sort((a,b)=>score(b)-score(a))[0];
  list.innerHTML=L.length?L.map(x=>`<div class="card ${TR(BR(x))} ${sel.includes(x.n)?"sel":""}" onclick="pick('${x.n}')">${x===best?'<span class="badge">הכי טוב בתקציב</span>':""}<button class="fav" onclick="event.stopPropagation();tf('${x.n}')" title="הוסף למועדפים">${fav.includes(x.n)?"❤️":"🤍"}</button><b>${x.n}</b><span class="rel ${TR(BR(x))}">${TL[TR(BR(x))]}</span><br><span class="price">${f(x.p)}</span>${imp=="off"?(x.po?`<div class="sum">ביבוא מקביל: ${f(x.pp)}</div>`:`<div class="sum">⚠️ אין יבואן רשמי, מחיר יבוא מקביל</div>`):x.po?`<div class="sum">ביבואן רשמי: ${f(x.po)}</div>`:`<div class="sum">אין יבואן רשמי בישראל</div>`}<div class="sum">${x.sum}</div></div>`).join(""):'<div class="empty">אין דגמים בטווח הזה. נסו לבחור טווח נוסף.</div>';
  // "שווה עוד קצת"
